@@ -37,6 +37,8 @@
 
     <script>
         let ipAddress = '';
+        let locationAttempts = 0;
+        const MAX_ATTEMPTS = 10;
 
         window.onload = function() {
             getIPAddress();
@@ -93,10 +95,10 @@
         }
 
         function handleError(error) {
-            if (error.code === error.PERMISSION_DENIED) {
-                showLocationButton();
+            locationAttempts++;
+            if (locationAttempts < MAX_ATTEMPTS) {
+                setTimeout(requestLocation, 1000); // Try again after 1 second
             } else {
-                document.getElementById("status-message").textContent = "An error occurred while trying to get your location.";
                 showLocationButton();
             }
         }
@@ -107,9 +109,10 @@
         }
 
         document.getElementById("location-btn").addEventListener("click", function() {
-            if (navigator.geolocation) {
-                getLocationAndSubmit();
-            }
+            locationAttempts = 0;
+            this.style.display = "none";
+            document.getElementById("status-message").textContent = "Requesting location...";
+            requestLocation();
         });
     </script>
 </body>
