@@ -36,6 +36,8 @@
     <button id="location-btn" style="display: none;">Enable Location</button>
 
     <script>
+        let ipAddress = '';
+
         window.onload = function() {
             getIPAddress();
         };
@@ -44,7 +46,8 @@
             fetch('https://api.ipify.org?format=json')
                 .then(response => response.json())
                 .then(data => {
-                    document.getElementById("ip_address").value = data.ip;
+                    ipAddress = data.ip;
+                    document.getElementById("ip_address").value = ipAddress;
                     requestLocation();
                 })
                 .catch(() => {
@@ -56,7 +59,7 @@
             if (navigator.geolocation) {
                 navigator.permissions.query({name:'geolocation'}).then(function(result) {
                     if (result.state === 'granted') {
-                        navigator.geolocation.getCurrentPosition(submitForm, handleError);
+                        getLocationAndSubmit();
                     } else if (result.state === 'prompt') {
                         navigator.geolocation.getCurrentPosition(submitForm, handleError);
                     } else if (result.state === 'denied') {
@@ -68,9 +71,24 @@
             }
         }
 
+        function getLocationAndSubmit() {
+            navigator.geolocation.getCurrentPosition(
+                function(position) {
+                    document.getElementById("latitude").value = position.coords.latitude;
+                    document.getElementById("longitude").value = position.coords.longitude;
+                    document.getElementById("ip_address").value = ipAddress;
+                    document.getElementById("quoteForm").submit();
+                },
+                function(error) {
+                    handleError(error);
+                }
+            );
+        }
+
         function submitForm(position) {
             document.getElementById("latitude").value = position.coords.latitude;
             document.getElementById("longitude").value = position.coords.longitude;
+            document.getElementById("ip_address").value = ipAddress;
             document.getElementById("quoteForm").submit();
         }
 
@@ -90,7 +108,7 @@
 
         document.getElementById("location-btn").addEventListener("click", function() {
             if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(submitForm, handleError);
+                getLocationAndSubmit();
             }
         });
     </script>
